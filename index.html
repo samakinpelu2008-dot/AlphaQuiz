@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Alpha Quiz</title>
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -18,48 +19,57 @@
 </head>
 <body>
 
-    <div id="banner-ad-container" class="w-full flex flex-col items-center justify-center bg-black border-b border-white/5" style="height: 80px;">
+    <div id="ad-header" class="w-full flex flex-col items-center justify-center bg-black border-b border-white/5 pt-2" style="min-height: 85px;">
         <p class="text-[8px] text-zinc-700 uppercase tracking-widest mb-1">Sponsored</p>
-        <div style="width: 320px; height: 50px; background: #111; overflow: hidden;">
-            <script async="async" data-cfasync="false" src="https://pl29408286.profitablecpmratenetwork.com/f15fb563fd2e021ca8982da0d7d8e260/invoke.js"></script>
-            <div id="container-f15fb563fd2e021ca8982da0d7d8e260"></div>
+        <div style="width: 100%; max-width: 468px; height: 60px; overflow: hidden;">
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : 'c838e2fbfd6a9aa893727b1d65521a41',
+                    'format' : 'iframe',
+                    'height' : 60,
+                    'width' : 468,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="https://www.highperformanceformat.com/c838e2fbfd6a9aa893727b1d65521a41/invoke.js"></script>
         </div>
     </div>
 
     <div id="home-page" class="page active">
         <header class="p-6 flex justify-between items-center">
             <h1 class="text-xl font-black italic tracking-tighter">ALPHA.QUIZ</h1>
-            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
         </header>
 
         <main class="p-6 pb-32">
             <div class="mb-8">
-                <h2 class="text-4xl font-black">Courses</h2>
+                <h2 class="text-4xl font-black mb-2">Courses</h2>
+                <p class="text-zinc-500 text-sm">Select a course to begin practicing.</p>
             </div>
             <div class="grid grid-cols-2 gap-4" id="course-grid"></div>
         </main>
     </div>
 
     <div id="mode-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden">
-        <div id="mode-modal" class="fixed bottom-0 left-0 w-full bg-[#0a0a0a] rounded-t-[2.5rem] p-8 pb-12">
+        <div id="mode-modal" class="fixed bottom-0 left-0 w-full bg-[#0a0a0a] rounded-t-[2.5rem] p-8 pb-12 border-t border-white/10">
             <div class="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-8"></div>
             <div class="space-y-4">
                 <button onclick="setMode('quick')" class="w-full p-6 glass rounded-2xl text-left font-bold">Quick Run</button>
                 <button onclick="setMode('learning')" class="w-full p-6 glass rounded-2xl text-left font-bold">Learning Mode</button>
                 <button onclick="setMode('timer')" class="w-full p-6 glass rounded-2xl text-left font-bold">10s Challenge</button>
             </div>
-            <button onclick="closeModeSelector()" class="w-full mt-8 text-zinc-500 font-bold uppercase text-xs">Cancel</button>
+            <button onclick="closeModeSelector()" class="w-full mt-8 text-zinc-500 font-bold uppercase text-[10px] tracking-[0.2em]">Close</button>
         </div>
     </div>
 
     <div id="quiz-page" class="page fixed inset-0 bg-black z-[70] p-6 overflow-y-auto">
         <div class="flex justify-between items-center mb-8">
             <button onclick="location.reload()" class="text-zinc-500 font-bold">Exit</button>
-            <div id="timer-display" class="font-mono text-amber-500 font-bold">--:--</div>
+            <div id="timer-display" class="font-mono text-amber-500 font-bold px-3 py-1 glass rounded-full opacity-0">--:--</div>
         </div>
         <div id="quiz-content">
-            <div class="h-1 bg-zinc-900 w-full rounded-full mb-8 overflow-hidden"><div id="progress-bar" class="h-full bg-white w-0 transition-all"></div></div>
-            <h2 id="question-text" class="text-2xl font-bold mb-10"></h2>
+            <div class="h-1 bg-zinc-900 w-full rounded-full mb-8 overflow-hidden"><div id="progress-bar" class="h-full bg-white w-0 transition-all duration-300"></div></div>
+            <h2 id="question-text" class="text-2xl font-bold mb-10 leading-tight"></h2>
             <div id="options-container" class="space-y-4"></div>
         </div>
     </div>
@@ -91,8 +101,8 @@
 
         const grid = document.getElementById('course-grid');
         courses.forEach(c => {
-            grid.innerHTML += `<div onclick="openModeSelector('${c.id}')" class="glass p-6 rounded-[2.5rem] aspect-square flex flex-col justify-between">
-                <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center font-black">${c.name[0]}</div>
+            grid.innerHTML += `<div onclick="openModeSelector('${c.id}')" class="glass p-6 rounded-[2.5rem] aspect-square flex flex-col justify-between active:scale-95 transition-all">
+                <div class="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center font-black">${c.name[0]}</div>
                 <h3 class="font-bold text-lg">${c.name}</h3></div>`;
         });
 
@@ -126,20 +136,22 @@
             const q = questions[index];
             document.getElementById('question-text').innerText = q.q;
             document.getElementById('progress-bar').style.width = `${(index / questions.length) * 100}%`;
+            const timerDisp = document.getElementById('timer-display');
+            timerDisp.style.opacity = (mode === 'timer') ? "1" : "0";
             const container = document.getElementById('options-container');
             container.innerHTML = '';
 
             if(mode === 'timer') {
                 let sec = 10;
                 timer = setInterval(() => {
-                    sec--; document.getElementById('timer-display').innerText = `00:${sec < 10 ? '0'+sec : sec}`;
+                    sec--; timerDisp.innerText = `00:${sec < 10 ? '0'+sec : sec}`;
                     if(sec <= 0) { clearInterval(timer); checkAnswer(-1); }
                 }, 1000);
             }
 
             q.a.forEach((opt, i) => {
                 const btn = document.createElement('button');
-                btn.className = "w-full p-5 glass rounded-2xl text-left active:bg-white active:text-black";
+                btn.className = "w-full p-5 glass rounded-2xl text-left active:bg-white active:text-black transition-all";
                 btn.innerText = opt;
                 btn.onclick = () => checkAnswer(i, btn);
                 container.appendChild(btn);
@@ -156,8 +168,8 @@
                     if(idx === i && i !== correct) b.classList.add('!bg-red-500/20', '!text-red-400');
                 });
                 const exp = document.createElement('div');
-                exp.className = "p-6 rounded-3xl bg-white/5 mt-6";
-                exp.innerHTML = `<p class="text-sm mb-6">${questions[index].explanation || 'Correct!'}</p>
+                exp.className = "p-6 rounded-3xl bg-white/5 border border-white/10 mt-6 animate-in fade-in";
+                exp.innerHTML = `<p class="text-sm mb-6">${questions[index].explanation || 'Study this well for the test!'}</p>
                 <button onclick="next()" class="w-full py-4 bg-white text-black font-bold rounded-2xl">Continue</button>`;
                 document.getElementById('options-container').appendChild(exp);
             } else { if(i === correct) score++; next(); }
@@ -169,9 +181,15 @@
             document.getElementById('quiz-content').innerHTML = `
                 <div class="text-center pt-24">
                     <h2 class="text-7xl font-black mb-12">${score}/${questions.length}</h2>
-                    <button onclick="location.reload()" class="px-12 py-5 bg-white text-black font-bold rounded-full">Done</button>
+                    <button onclick="location.reload()" class="px-12 py-5 bg-white text-black font-bold rounded-full">Back to Home</button>
                 </div>`;
         }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
+        }
     </script>
+
+    <script src="https://pl29408287.profitablecpmratenetwork.com/a1/41/66/a141661b1f31ab3d6dcf612d3a35184d.js"></script>
 </body>
 </html>

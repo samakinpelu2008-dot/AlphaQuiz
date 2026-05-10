@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Quiz | Exam Prep</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .page { display: none; animation: fadeIn 0.4s ease-out forwards; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* The Modal for Mode Selection */
+        #mode-modal { transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
+        #mode-modal.active { transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div id="home-page" class="page active">
+        <header class="p-6 flex justify-between items-center sticky top-0 bg-black/80 backdrop-blur-md z-40">
+            <h1 class="text-xl font-black italic tracking-tighter">ALPHA.QUIZ</h1>
+            <div class="w-10 h-10 rounded-full glass flex items-center justify-center">
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            </div>
+        </header>
+
+        <main class="p-6 pb-32">
+            <div class="mb-8">
+                <h2 class="text-4xl font-black">Choose Course</h2>
+                <p class="text-zinc-500 text-sm">Select a subject to start earning points.</p>
+            </div>
+
+            <div id="ad-top" class="w-full h-20 glass rounded-2xl mb-8 flex items-center justify-center text-[10px] text-zinc-600 uppercase tracking-widest">
+                Ad Space
+            </div>
+
+            <div class="grid grid-cols-2 gap-4" id="course-grid">
+                </div>
+        </main>
+    </div>
+
+    <div id="mode-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300">
+        <div id="mode-modal" class="fixed bottom-0 left-0 w-full bg-[#111] rounded-t-[2.5rem] p-8 pb-12 border-t border-white/10">
+            <div class="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-8"></div>
+            <h3 class="text-2xl font-bold mb-2">Select Quiz Mode</h3>
+            <p class="text-zinc-500 text-sm mb-8">How do you want to study today?</p>
+            
+            <div class="space-y-4">
+                <button onclick="setMode('quick')" class="w-full p-5 glass rounded-2xl text-left flex justify-between items-center">
+                    <div><span class="font-bold block">Quick Run</span><span class="text-xs text-zinc-500">Standard practice mode</span></div>
+                    <div class="text-blue-500">→</div>
+                </button>
+                <button onclick="setMode('learning')" class="w-full p-5 glass rounded-2xl text-left flex justify-between items-center">
+                    <div><span class="font-bold block">Learning Mode</span><span class="text-xs text-zinc-500">Instant answers & explanations</span></div>
+                    <div class="text-emerald-500">→</div>
+                </button>
+                <button onclick="setMode('timer')" class="w-full p-5 glass rounded-2xl text-left flex justify-between items-center">
+                    <div><span class="font-bold block">10s Challenge</span><span class="text-xs text-zinc-500">High pressure, no breaks</span></div>
+                    <div class="text-amber-500">→</div>
+                </button>
+            </div>
+            <button onclick="closeModeSelector()" class="w-full mt-6 text-zinc-500 text-sm font-bold">Cancel</button>
+        </div>
+    </div>
+
+    <div id="quiz-page" class="page fixed inset-0 bg-black z-[70] p-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+            <button onclick="location.reload()" class="text-zinc-500 font-bold">Exit</button>
+            <div id="timer-display" class="font-mono text-amber-500 font-bold px-4 py-1 glass rounded-full">--:--</div>
+        </div>
+
+        <div id="quiz-content">
+            <div class="h-1 bg-zinc-900 w-full rounded-full overflow-hidden mb-8">
+                <div id="progress-bar" class="h-full bg-white transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <h2 id="question-text" class="text-2xl font-bold mb-10 leading-tight">...</h2>
+            <div id="options-container" class="space-y-4"></div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 w-full p-4 bg-black/80 backdrop-blur-md">
+            <div id="ad-bottom" class="h-14 glass rounded-xl flex items-center justify-center text-[10px] text-zinc-700">
+                Banner Ad
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCztdiCYxch4pHpP0Rqu737PHp9LSL4PH0",
+            authDomain: "alpha-quiz-46d96.firebaseapp.com",
+            projectId: "alpha-quiz-46d96",
+            storageBucket: "alpha-quiz-46d96.firebasestorage.app",
+            messagingSenderId: "767717782522",
+            appId: "1:767717782522:web:5bfd0288fcd5b3031f6a43"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const courses = [
+            { id: 'phy102', name: 'PHY 102', color: 'blue' },
+            { id: 'chm102', name: 'CHM 102', color: 'emerald' },
+            { id: 'mth102', name: 'MTH 102', color: 'purple' },
+            { id: 'gst112', name: 'GST 112', color: 'amber' },
+            { id: 'bio102', name: 'BIO 102', color: 'red' },
+            { id: 'cos', name: 'COS', color: 'zinc' }
+        ];
+
+        let currentCourse = '';
+        let questions = [];
+        let index = 0;
+        let score = 0;
+        let mode = '';
+        let timer;
+
+        // INIT HOME
+        const grid = document.getElementById('course-grid');
+        courses.forEach(c => {
+            grid.innerHTML += `
+                <div onclick="openModeSelector('${c.id}')" class="glass p-6 rounded-[2.5rem] aspect-square flex flex-col justify-between active:scale-95 transition-all">
+                    <div class="w-10 h-10 rounded-2xl bg-${c.color}-500/20 text-${c.color}-400 flex items-center justify-center font-black">${c.name[0]}</div>
+                    <h3 class="font-bold text-lg">${c.name}</h3>
+                </div>
+            `;
+        });
+
+        window.openModeSelector = (id) => {
+            currentCourse = id;
+            document.getElementById('mode-overlay').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('mode-overlay').classList.add('opacity-100');
+                document.getElementById('mode-modal').classList.add('active');
+            }, 10);
+        };
+
+        window.closeModeSelector = () => {
+            document.getElementById('mode-modal').classList.remove('active');
+            document.getElementById('mode-overlay').classList.remove('opacity-100');
+            setTimeout(() => document.getElementById('mode-overlay').classList.add('hidden'), 300);
+        };
+
+        window.setMode = async (m) => {
+            mode = m;
+            closeModeSelector();
+            const docRef = doc(db, "quizzes", currentCourse);
+            const snap = await getDoc(docRef);
+            if(snap.exists()) {
+                questions = snap.data().questions;
+                startQuiz();
+            } else {
+                alert("Quiz data not found for this course!");
+            }
+        };
+
+        function startQuiz() {
+            index = 0; score = 0;
+            document.getElementById('home-page').classList.remove('active');
+            document.getElementById('quiz-page').classList.add('active');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            clearInterval(timer);
+            if(index >= questions.length) return finishQuiz();
+
+            const q = questions[index];
+            document.getElementById('question-text').innerText = q.q;
+            document.getElementById('progress-bar').style.width = `${(index / questions.length) * 100}%`;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            if(mode === 'timer') {
+                let sec = 10;
+                document.getElementById('timer-display').innerText = `00:${sec < 10 ? '0'+sec : sec}`;
+                timer = setInterval(() => {
+                    sec--;
+                    document.getElementById('timer-display').innerText = `00:${sec < 10 ? '0'+sec : sec}`;
+                    if(sec <= 0) { clearInterval(timer); checkAnswer(-1); }
+                }, 1000);
+            }
+
+            q.a.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full p-5 glass rounded-2xl text-left font-medium transition-all active:bg-white active:text-black";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(i, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(i, btn) {
+            clearInterval(timer);
+            const correct = questions[index].correct;
+            
+            if(mode === 'learning') {
+                const btns = document.querySelectorAll('#options-container button');
+                btns.forEach((b, idx) => {
+                    b.disabled = true;
+                    if(idx === correct) b.classList.add('!bg-green-500/20', '!border-green-500/50', '!text-green-400');
+                    if(idx === i && i !== correct) b.classList.add('!bg-red-500/20', '!border-red-500/50', '!text-red-400');
+                });
+                
+                const exp = document.createElement('div');
+                exp.className = "p-5 rounded-2xl bg-white/5 border border-white/10 mt-6 animate-in fade-in slide-in-from-bottom-2";
+                exp.innerHTML = `<p class="text-xs font-bold uppercase text-zinc-500 mb-2">Explanation</p><p class="text-sm">${questions[index].explanation || 'Study hard!'}</p>
+                <button onclick="next()" class="w-full mt-6 py-4 bg-white text-black font-bold rounded-xl">Continue</button>`;
+                document.getElementById('options-container').appendChild(exp);
+            } else {
+                if(i === correct) score++;
+                next();
+            }
+        }
+
+        window.next = () => { index++; renderQuestion(); };
+
+        function finishQuiz() {
+            document.getElementById('quiz-content').innerHTML = `
+                <div class="text-center pt-20">
+                    <p class="text-zinc-500 uppercase tracking-widest text-xs mb-4">Quiz Complete</p>
+                    <h2 class="text-6xl font-black mb-8">${score}/${questions.length}</h2>
+                    <button onclick="location.reload()" class="px-10 py-4 bg-white text-black font-bold rounded-full">Go Home</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Alpha Quiz</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .page { display: none; animation: fadeIn 0.4s ease-out forwards; }
         .page.active { display: block; }
@@ -27,35 +27,46 @@
         </header>
 
         <main class="p-6 pb-32">
-            <div id="ad-top" class="w-full min-h-[100px] mb-8 flex justify-center overflow-hidden">
-                <script async="async" data-cfasync="false" src="https://pl29408286.profitablecpmratenetwork.com/f15fb563fd2e021ca8982da0d7d8e260/invoke.js"></script>
-                <div id="container-f15fb563fd2e021ca8982da0d7d8e260"></div>
+            <div class="mb-10">
+                <h2 class="text-4xl font-black mb-2">Courses</h2>
+                <p class="text-zinc-500 text-sm">Select a course to begin practicing.</p>
             </div>
 
-            <div class="mb-8"><h2 class="text-4xl font-black">Courses</h2></div>
-            <div class="grid grid-cols-2 gap-4" id="course-grid"></div>
+            <div class="grid grid-cols-2 gap-4" id="course-grid">
+                </div>
         </main>
     </div>
 
     <div id="mode-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300">
-        <div id="mode-modal" class="fixed bottom-0 left-0 w-full bg-[#111] rounded-t-[2.5rem] p-8 pb-12 border-t border-white/10">
+        <div id="mode-modal" class="fixed bottom-0 left-0 w-full bg-[#0a0a0a] rounded-t-[2.5rem] p-8 pb-12 border-t border-white/10">
             <div class="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-8"></div>
             <div class="space-y-4">
-                <button onclick="setMode('quick')" class="w-full p-5 glass rounded-2xl text-left"><b>Quick Run</b></button>
-                <button onclick="setMode('learning')" class="w-full p-5 glass rounded-2xl text-left"><b>Learning Mode</b></button>
-                <button onclick="setMode('timer')" class="w-full p-5 glass rounded-2xl text-left"><b>10s Challenge</b></button>
+                <button onclick="setMode('quick')" class="w-full p-6 glass rounded-2xl text-left flex justify-between items-center">
+                    <span class="font-bold">Quick Run</span>
+                    <span class="text-zinc-500">→</span>
+                </button>
+                <button onclick="setMode('learning')" class="w-full p-6 glass rounded-2xl text-left flex justify-between items-center">
+                    <span class="font-bold">Learning Mode</span>
+                    <span class="text-zinc-500">→</span>
+                </button>
+                <button onclick="setMode('timer')" class="w-full p-6 glass rounded-2xl text-left flex justify-between items-center">
+                    <span class="font-bold">10s Challenge</span>
+                    <span class="text-zinc-500">→</span>
+                </button>
             </div>
-            <button onclick="closeModeSelector()" class="w-full mt-6 text-zinc-500 font-bold">Cancel</button>
+            <button onclick="closeModeSelector()" class="w-full mt-8 text-zinc-500 font-bold uppercase text-xs tracking-widest">Cancel</button>
         </div>
     </div>
 
     <div id="quiz-page" class="page fixed inset-0 bg-black z-[70] p-6 overflow-y-auto">
         <div class="flex justify-between items-center mb-8">
             <button onclick="location.reload()" class="text-zinc-500 font-bold">Exit</button>
-            <div id="timer-display" class="font-mono text-amber-500 font-bold px-4 py-1 glass rounded-full">--:--</div>
+            <div id="timer-display" class="font-mono text-amber-500 font-bold px-4 py-1 glass rounded-full opacity-0">--:--</div>
         </div>
         <div id="quiz-content">
-            <div class="h-1 bg-zinc-900 w-full rounded-full mb-8"><div id="progress-bar" class="h-full bg-white transition-all duration-300"></div></div>
+            <div class="h-1 bg-zinc-900 w-full rounded-full mb-8 overflow-hidden">
+                <div id="progress-bar" class="h-full bg-white transition-all duration-300" style="width: 0%"></div>
+            </div>
             <h2 id="question-text" class="text-2xl font-bold mb-10 leading-tight"></h2>
             <div id="options-container" class="space-y-4"></div>
         </div>
@@ -100,7 +111,10 @@
         window.openModeSelector = (id) => {
             currentCourse = id;
             document.getElementById('mode-overlay').classList.remove('hidden');
-            setTimeout(() => { document.getElementById('mode-overlay').classList.add('opacity-100'); document.getElementById('mode-modal').classList.add('active'); }, 10);
+            setTimeout(() => { 
+                document.getElementById('mode-overlay').classList.add('opacity-100'); 
+                document.getElementById('mode-modal').classList.add('active'); 
+            }, 10);
         };
 
         window.closeModeSelector = () => {
@@ -113,6 +127,7 @@
             mode = m; closeModeSelector();
             const snap = await getDoc(doc(db, "quizzes", currentCourse));
             if(snap.exists()) { questions = snap.data().questions; startQuiz(); }
+            else { alert("Coming soon!"); }
         };
 
         function startQuiz() {
@@ -128,13 +143,18 @@
             const q = questions[index];
             document.getElementById('question-text').innerText = q.q;
             document.getElementById('progress-bar').style.width = `${(index / questions.length) * 100}%`;
+            
+            const timerDisp = document.getElementById('timer-display');
+            timerDisp.style.opacity = (mode === 'timer') ? "1" : "0";
+
             const container = document.getElementById('options-container');
             container.innerHTML = '';
 
             if(mode === 'timer') {
                 let sec = 10;
+                timerDisp.innerText = `00:${sec < 10 ? '0'+sec : sec}`;
                 timer = setInterval(() => {
-                    sec--; document.getElementById('timer-display').innerText = `00:${sec < 10 ? '0'+sec : sec}`;
+                    sec--; timerDisp.innerText = `00:${sec < 10 ? '0'+sec : sec}`;
                     if(sec <= 0) { clearInterval(timer); checkAnswer(-1); }
                 }, 1000);
             }
@@ -154,28 +174,35 @@
             if(mode === 'learning') {
                 const btns = document.querySelectorAll('#options-container button');
                 btns.forEach((b, idx) => {
-                    if(idx === correct) b.classList.add('!bg-green-500/20', '!text-green-400');
-                    if(idx === i && i !== correct) b.classList.add('!bg-red-500/20', '!text-red-400');
+                    b.disabled = true;
+                    if(idx === correct) b.classList.add('!bg-green-500/20', '!text-green-400', '!border-green-500/30');
+                    if(idx === i && i !== correct) b.classList.add('!bg-red-500/20', '!text-red-400', '!border-red-500/30');
                 });
                 const exp = document.createElement('div');
-                exp.className = "p-5 rounded-2xl bg-white/5 mt-6 animate-in fade-in";
-                exp.innerHTML = `<p class="text-sm">${questions[index].explanation || 'Correct!'}</p>
-                <button onclick="next()" class="w-full mt-6 py-4 bg-white text-black font-bold rounded-xl">Next</button>`;
+                exp.className = "p-6 rounded-3xl bg-white/5 border border-white/10 mt-6 animate-in fade-in";
+                exp.innerHTML = `<p class="text-xs font-bold text-zinc-500 uppercase mb-2">Explanation</p>
+                <p class="text-sm mb-6">${questions[index].explanation || 'Study this concept for the exams!'}</p>
+                <button onclick="next()" class="w-full py-4 bg-white text-black font-bold rounded-2xl">Continue</button>`;
                 document.getElementById('options-container').appendChild(exp);
-            } else { if(i === correct) score++; next(); }
+            } else { 
+                if(i === correct) score++; 
+                setTimeout(next, 200); 
+            }
         }
 
         window.next = () => { index++; renderQuestion(); };
 
         function finishQuiz() {
-            document.getElementById('quiz-content').innerHTML = `<div class="text-center pt-20"><h2 class="text-6xl font-black mb-8">${score}/${questions.length}</h2><button onclick="location.reload()" class="px-10 py-4 bg-white text-black font-bold rounded-full">Done</button></div>`;
+            document.getElementById('quiz-content').innerHTML = `
+                <div class="text-center pt-24">
+                    <p class="text-zinc-500 uppercase tracking-[0.2em] text-[10px] mb-4">Result</p>
+                    <h2 class="text-7xl font-black mb-12">${score}/${questions.length}</h2>
+                    <button onclick="location.reload()" class="px-12 py-5 bg-white text-black font-bold rounded-full active:scale-95 transition-all">Back to Home</button>
+                </div>`;
         }
 
-        // REGISTER SERVICE WORKER
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js');
-            });
+            window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
         }
     </script>
 
